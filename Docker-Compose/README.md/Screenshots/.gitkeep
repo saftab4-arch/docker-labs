@@ -1,0 +1,960 @@
+# Docker Compose Lab — Full Production Stack
+
+## What We Built
+
+A fully working production-pattern web application using Docker Compose with:
+
+- **Flask** (Python web app) — runs as non-root user, built with multi-stage Dockerfile
+- **Nginx** (reverse proxy) — custom image, forwards traffic to Flask
+- **Custom Bridge Network** — containers talk to each other by name using Docker DNS
+- **Multi-stage builds** — slim, secure production images
+- **Non-root user** — Flask never runs as root inside the container
+
+**Traffic Flow:**
+```
+You (browser) → localhost:80
+                    ↓
+              Nginx Container (port 80)
+                    ↓
+              Flask Container (port 5000, internal only)
+                    ↓
+              Response back to browser
+```
+
+---
+
+## Project Structure
+
+```
+compose-lab/
+├── docker-compose.yml          → orchestrates everything
+├── web/
+│   ├── Dockerfile              → multi-stage build + non-root user
+│   ├── app.py                  → Flask application
+│   └── requirements.txt        → Python dependencies
+└── nginx/
+    ├── Dockerfile              → custom nginx image
+    └── nginx.conf              → reverse proxy configuration
+```
+
+---
+
+## File 1 — web/app.py (Flask Application)
+
+```python
+from flask import Flask
+import os
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return '''
+    <h1>🐳 Docker Compose Lab</h1>
+    <p>Flask is running as user: <strong>{}</strong></p>
+    <p>Container hostname: <strong>{}</strong></p>
+    <p>Traffic came through Nginx reverse proxy!</p>
+    '''.format(os.popen('whoami').read().strip(),
+               os.popen('hostname').read().strip())
+
+@app.route('/health')
+def health():
+    return {'status': 'healthy', 'service': 'flask'}
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+```
+
+**What each part does:**
+
+| Part | Explanation |
+|---|---|
+| `from flask import Flask` | Import Flask framework |
+| `@app.route('/')` | Handle requests to the root URL |
+| `os.popen('whoami')` | Run whoami command — proves non-root user |
+| `os.popen('hostname')` | Shows container ID as hostname |
+| `@app.route('/health')` | Health check endpoint — returns JSON |
+| `host='0.0.0.0'` | Listen on ALL interfaces inside container |
+| `port=5000` | Flask runs on port 5000 internally |
+
+**Why `host='0.0.0.0'`?**
+```
+Without it → Flask only listens on 127.0.0.1 (localhost inside container)
+             Nginx cannot reach it from outside the container
+             Everything breaks
+
+With it    → Flask listens on ALL interfaces
+             Nginx can reach Flask across the Docker network
+             Traffic flows correctly
+```
+
+---
+
+## File 2 — web/requirements.txt
+
+```
+flask==3.0.0
+```
+
+**Why pin the version?**
+```
+flask          → installs whatever is latest TODAY
+                 next month latest might be different
+                 could break your app
+
+flask==3.0.0   → always installs exactly 3.0.0
+                 same version every time
+                 consistent across all environments
+                 this is production best practice
+```
+
+---
+
+## File 3 — web/Dockerfile (Multi-stage + Non-root)
+
+```dockerfile
+# ── Stage 1: Builder ──────────────────────────
+FROM python:3.11 AS builder
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# ── Stage 2: Production (slim + non-root) ─────
+FROM python:3.11-slim AS production
+
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+
+COPY --from=builder /root/.local /home/appuser/.local
+COPY --from=builder /app .
+
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]
+```
+
+### Stage 1 — Builder (Line by Line)
+
+**`FROM python:3.11 AS builder`**
+```
+Start from the full Python 3.11 image (about 900MB)
+"AS builder" gives this stage a name
+We use this name later to copy files FROM it
+This image has compilers, pip, everything needed to BUILD
+```
+
+**`WORKDIR /app`**
+```
+Create /app directory inside the container
+AND automatically cd into it
+All commands after this run from /app
+Same as: mkdir /app && cd /app
+```
+
+**`COPY requirements.txt .`**
+```
+Copy requirements.txt from your machine into /app
+The dot (.) = current directory = /app
+We copy this BEFORE app code — this is intentional
+See "Layer Caching" explanation below
+```
+
+**`RUN pip install --user --no-cache-dir -r requirements.txt`**
+```
+Install Flask and all dependencies
+--user           → install into /root/.local (not system-wide)
+                   important! We copy just this folder to Stage 2
+                   instead of the entire Python installation
+--no-cache-dir   → don't save pip download cache
+                   reduces image size
+-r               → read from requirements file
+```
+
+**`COPY . .`**
+```
+Copy ALL your app files into /app
+First dot  → everything on YOUR machine (current directory)
+Second dot → into /app inside the container
+This runs AFTER pip install — layer caching optimization
+```
+
+### Why Two Stages? (The Key Concept)
+
+```
+Stage 1 (builder)               Stage 2 (production)
+─────────────────               ────────────────────
+python:3.11 = 900MB        →    python:3.11-slim = 60MB
+pip, compilers, gcc        →    none of these needed
+build tools                →    not needed to RUN the app
+installed packages         →    COPY just the packages ✓
+app code                   →    COPY just the code ✓
+
+Final result: 80MB image instead of 900MB
+Smaller = faster to pull, less attack surface, cheaper storage
+```
+
+### Stage 2 — Production (Line by Line)
+
+**`FROM python:3.11-slim AS production`**
+```
+Start completely FRESH from a slim Python image
+Slim = no compilers, no pip extras, minimal OS
+About 60MB vs 900MB for full image
+This is the image that actually goes to production
+```
+
+**`RUN groupadd -r appuser && useradd -r -g appuser appuser`**
+```
+groupadd -r appuser    → create a system group named appuser
+                         -r means system group (no login shell)
+
+useradd -r             → create a system user
+        -g appuser     → put them in the appuser group
+        appuser        → name the user appuser
+
+Why not root?
+→ If container is compromised and running as root
+  attacker gets ROOT on the host machine
+→ If running as appuser
+  attacker gets a limited unprivileged user
+  cannot install packages, cannot modify system files
+  massive security improvement
+```
+
+**`COPY --from=builder /root/.local /home/appuser/.local`**
+```
+This is the magic of multi-stage builds
+
+--from=builder        → reach back into Stage 1
+/root/.local          → where pip --user installed Flask in Stage 1
+/home/appuser/.local  → copy it into appuser's home in Stage 2
+
+We carry ONLY the installed packages
+Not the entire 900MB build environment
+Just the 20MB of Flask and its dependencies
+```
+
+**`COPY --from=builder /app .`**
+```
+Grab our app code (app.py, requirements.txt) from Stage 1
+Copy into current WORKDIR (/app) in Stage 2
+Again using --from=builder to reference Stage 1
+```
+
+**`RUN chown -R appuser:appuser /app`**
+```
+chown = change ownership
+-R    = recursive (applies to ALL files and folders inside /app)
+appuser:appuser = user:group
+
+Why needed?
+→ All the files were COPY'd in while running as root
+→ appuser doesn't own them yet
+→ Without this, appuser cannot read or execute the files
+→ This gives appuser full ownership of /app
+```
+
+**`USER appuser`**
+```
+Switch from root to appuser
+Every command after this runs as appuser
+The Flask app itself runs as appuser
+This is the security line — everything after is non-root
+
+Verify it works:
+docker compose exec web whoami
+→ returns: appuser (NOT root)
+```
+
+**`EXPOSE 5000`**
+```
+Documentation — tells Docker and developers this app uses port 5000
+Does NOT actually open or publish the port
+Actual port mapping happens in docker-compose.yml or docker run
+Think of it as a comment for humans reading the Dockerfile
+```
+
+**`CMD ["python", "app.py"]`**
+```
+Default command when container starts
+Runs: python app.py
+
+Why array format ["python", "app.py"] not string "python app.py"?
+→ Array = exec form, runs directly, no shell
+→ String = shell form, spawns /bin/sh first
+→ Array is safer, signals (like SIGTERM) go directly to Python
+→ Graceful shutdown works correctly with array form
+```
+
+### Layer Caching — Why Order Matters
+
+```dockerfile
+# WRONG ORDER — slow builds
+COPY . .                    # copies app code
+RUN pip install ...         # installs dependencies
+# Problem: every time you change app.py
+# Docker re-runs pip install (slow, 2-3 minutes)
+
+# CORRECT ORDER — fast builds  
+COPY requirements.txt .     # copy deps file first
+RUN pip install ...         # install (cached if requirements unchanged)
+COPY . .                    # copy app code last
+# Now: changing app.py only invalidates the last COPY
+# pip install uses cache = 5 second builds
+```
+
+---
+
+## File 4 — nginx/nginx.conf
+
+```nginx
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://web:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /health {
+        proxy_pass http://web:5000/health;
+    }
+}
+```
+
+**Line by line:**
+
+**`listen 80`**
+```
+Nginx listens for incoming connections on port 80
+This is the standard HTTP port
+Users hit localhost:80 and Nginx receives it here
+```
+
+**`location / { ... }`**
+```
+Match ALL requests (anything starting with /)
+Every URL goes through this block
+/ matches everything: /, /about, /api/users, etc.
+```
+
+**`proxy_pass http://web:5000`**
+```
+Forward the request to Flask
+
+web   → the SERVICE NAME defined in docker-compose.yml
+        Docker DNS resolves "web" to Flask container's IP
+        automatically — same custom network magic
+        you don't need to know the IP address
+
+5000  → Flask's port inside the container
+
+This is why Flask doesn't need exposed ports in compose
+It's only reachable internally through Nginx
+```
+
+**`proxy_set_header Host $host`**
+```
+Pass the original Host header to Flask
+Without this → Flask sees Host: web:5000 (internal)
+With this    → Flask sees Host: localhost (what user typed)
+Important for apps that check the Host header
+```
+
+**`proxy_set_header X-Real-IP $remote_addr`**
+```
+Pass the real client IP address to Flask
+Without this → Flask thinks every request comes from Nginx
+               logs show 172.20.0.3 for everything
+With this    → Flask gets the actual client IP
+               important for logging, rate limiting, security
+```
+
+**Why Nginx in front of Flask?**
+```
+Flask alone:
+→ Single threaded by default
+→ Not designed for high traffic
+→ No SSL termination built in
+→ No rate limiting
+→ No static file caching
+→ Exposed directly to internet = security risk
+
+Nginx + Flask:
+→ Nginx handles thousands of concurrent connections
+→ Nginx terminates SSL (HTTPS)
+→ Nginx rate limits bad actors
+→ Nginx serves static files itself (fast)
+→ Flask only handles actual app logic
+→ Flask never faces the internet directly
+```
+
+---
+
+## File 5 — nginx/Dockerfile
+
+```dockerfile
+FROM nginx:alpine
+
+RUN rm /etc/nginx/conf.d/default.conf
+
+COPY nginx.conf /etc/nginx/conf.d/app.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+**Line by line:**
+
+**`FROM nginx:alpine`**
+```
+Alpine = tiny Linux distro (5MB vs 200MB for Ubuntu)
+nginx:alpine = about 25MB total
+vs nginx:latest = about 140MB
+Always use alpine for production when possible
+Same functionality, fraction of the size
+```
+
+**`RUN rm /etc/nginx/conf.d/default.conf`**
+```
+Remove nginx's default configuration
+Default config serves static HTML files
+We don't want that — we want our reverse proxy config
+Must remove it first or both configs conflict
+```
+
+**`COPY nginx.conf /etc/nginx/conf.d/app.conf`**
+```
+Copy OUR nginx.conf into the container
+Place it in /etc/nginx/conf.d/ where nginx reads configs
+Named app.conf (can be any name ending in .conf)
+This replaces the default behavior with our reverse proxy
+```
+
+**`CMD ["nginx", "-g", "daemon off;"]`**
+```
+Start nginx in the foreground
+
+daemon off = do NOT run as a background daemon
+Why? Docker containers need a foreground process
+     If nginx daemonizes (goes to background)
+     The container thinks nothing is running
+     Container immediately exits
+daemon off keeps nginx in foreground
+Container stays alive as long as nginx runs
+```
+
+---
+
+## File 6 — docker-compose.yml
+
+```yaml
+version: '3.8'
+
+services:
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    networks:
+      - app-network
+    restart: always
+    environment:
+      - FLASK_ENV=production
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+    depends_on:
+      - web
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge
+```
+
+**Line by line:**
+
+**`services:`**
+```
+Defines all containers in your stack
+Each item under services = one container
+```
+
+**`web:` and `nginx:`**
+```
+Service names — you choose these
+They become the DNS names on the network
+Nginx finds Flask by typing http://web:5000
+because the service is named "web"
+```
+
+**`build: context: ./web`**
+```
+Build an image from a Dockerfile
+context: ./web → look in the web/ folder
+dockerfile: Dockerfile → use the file named Dockerfile
+Docker sends everything in ./web to the build engine
+```
+
+**`networks: - app-network`**
+```
+Connect this container to app-network
+Both web and nginx are on the same network
+This enables container-to-container DNS
+web can ping nginx, nginx can reach web
+```
+
+**`restart: always`**
+```
+If container crashes → restart it automatically
+If Docker daemon restarts → start containers automatically
+If your EC2 reboots → containers come back up
+Production requirement — you can't babysit containers
+```
+
+**`environment: - FLASK_ENV=production`**
+```
+Set environment variables inside the container
+FLASK_ENV=production → tells Flask to run in production mode
+                        disables debug mode
+                        more secure, better performance
+```
+
+**`ports: - "80:80"`**
+```
+Map host port → container port
+"80:80" = your machine port 80 → nginx container port 80
+
+Only nginx has ports exposed
+Flask (web) has NO ports section
+Flask is internal only — unreachable from outside
+Only Nginx can talk to Flask
+This is correct production security pattern
+```
+
+**`depends_on: - web`**
+```
+Start web container BEFORE nginx starts
+Without this → nginx might start before Flask is ready
+               nginx tries to connect, Flask not ready yet
+               nginx crashes on startup
+depends_on ensures correct startup order
+```
+
+**`networks: app-network: driver: bridge`**
+```
+Define the custom network explicitly
+driver: bridge = standard Docker bridge network
+                 containers get their own IPs
+                 DNS resolution by service name
+                 isolated from other Docker networks
+
+Without this section → Compose creates a default network
+                        still works but not explicitly defined
+With this section    → you control the network configuration
+                        can add subnet, IP ranges, etc.
+```
+
+---
+
+## Every Docker Compose Command Used
+
+### Starting & Building
+
+**`docker compose up -d --build`**
+```
+The most important command — used every single deployment
+
+up       → create and start all containers
+-d       → detached mode (runs in background)
+--build  → rebuild images before starting
+           even if image already exists
+
+When to use:
+→ First time running the project
+→ After changing any Dockerfile
+→ After changing app code
+→ Any deployment to production
+
+What it does step by step:
+1. Reads docker-compose.yml
+2. Builds all images with build: sections
+3. Creates the custom network (app-network)
+4. Starts containers in dependency order
+5. Returns control to your terminal
+```
+
+**`docker compose build`**
+```
+Rebuild images WITHOUT starting containers
+Useful when you want to build first, start later
+docker compose build web → rebuild just the web service
+```
+
+**`docker compose pull`**
+```
+Pull latest versions of images from Docker Hub
+Useful before deploying to get security patches
+docker compose pull → pulls nginx:alpine, postgres:15 etc
+```
+
+### Checking Status
+
+**`docker compose ps`**
+```
+Show status of all services in this compose project
+
+Output columns:
+NAME     → container name
+IMAGE    → which image it's using
+COMMAND  → what command is running inside
+SERVICE  → which service from compose file
+STATUS   → Up/Exited/Restarting
+PORTS    → port mappings (host:container)
+```
+
+**`docker compose logs`**
+```
+Show logs from ALL services combined
+Color coded by service name
+flask-app logs in one color, nginx-proxy in another
+```
+
+**`docker compose logs -f`**
+```
+Follow logs live (like tail -f)
+-f = follow, streams new log lines as they appear
+Ctrl+C to stop following
+```
+
+**`docker compose logs -f web`**
+```
+Follow logs for just ONE service
+Replace "web" with any service name
+Useful when debugging a specific container
+```
+
+### Getting Inside Containers
+
+**`docker compose exec web bash`**
+```
+Open a bash shell inside the running web container
+exec  → execute a command in running container
+web   → the service name
+bash  → the command to run
+
+You land inside the container as the running user
+In our case: appuser (NOT root)
+Your prompt changes to: appuser@<container-id>:/app$
+```
+
+**`docker compose exec web whoami`**
+```
+Run a single command inside the container
+whoami → prints current user
+Returns: appuser (proves non-root is working)
+```
+
+**`docker compose exec db psql -U postgres`**
+```
+Get into postgres database directly
+db    → the database service name
+psql  → postgres command line client
+-U postgres → connect as postgres user
+```
+
+**`docker compose run web python migrate.py`**
+```
+Run a ONE-OFF command in a NEW container
+Different from exec (which uses existing running container)
+Use case: database migrations before starting the app
+          running tests
+          one-time setup scripts
+Container is created, runs the command, then removed
+```
+
+### Managing Services
+
+**`docker compose restart`**
+```
+Restart ALL services
+Stops and starts all containers
+```
+
+**`docker compose restart nginx`**
+```
+Restart just ONE service
+Other services keep running uninterrupted
+Use case: you changed nginx.conf and need nginx to reload
+```
+
+**`docker compose up -d --scale web=2`**
+```
+Run MULTIPLE instances of a service
+
+--scale web=2 → run 2 copies of the web service
+web           → the service name from compose file
+2             → how many instances
+
+Docker auto-names them:
+compose-lab-web-1
+compose-lab-web-2
+
+IMPORTANT: Cannot use container_name with scaling
+container_name forces ONE specific name
+scaling needs unique names for each instance
+Remove container_name from the service to enable scaling
+
+Nginx automatically load balances between instances
+```
+
+### Stopping & Cleanup
+
+**`docker compose down`**
+```
+Stop and REMOVE all containers and networks
+Images are kept (you can restart quickly)
+Volumes are kept (data is safe)
+
+What gets removed:
+→ All containers
+→ The custom network (app-network)
+
+What stays:
+→ Images (compose-lab-web, compose-lab-nginx)
+→ Volumes (any named volumes)
+→ Your code files
+```
+
+**`docker compose down -v`**
+```
+Stop, remove containers, networks AND volumes
+-v = also delete named volumes
+
+USE WITH CAUTION in production
+This deletes your database data if using volumes
+Use case: completely reset the environment
+          start fresh including database
+```
+
+**`docker compose down --rmi all`**
+```
+Nuclear option — removes everything
+
+Removes:
+→ All containers
+→ All networks
+→ All images built by this compose file
+
+After this: docker images | grep compose-lab → nothing
+
+Use case: completely clean up a project
+          free up disk space
+          start totally fresh
+```
+
+---
+
+## Docker Networking in This Lab
+
+### What Happened Automatically
+
+When you ran `docker compose up`, Compose:
+
+```
+1. Created network: compose-lab_app-network
+   Type: bridge
+   Subnet: 172.20.0.0/16
+   Gateway: 172.20.0.1
+
+2. Assigned IPs:
+   Flask (web)    → 172.20.0.2
+   Nginx          → 172.20.0.3
+
+3. Registered DNS:
+   "web"   → resolves to 172.20.0.2
+   "nginx" → resolves to 172.20.0.3
+```
+
+### Why nginx.conf uses `http://web:5000`
+
+```
+Nginx config:  proxy_pass http://web:5000
+
+"web"  → Docker DNS resolves this to Flask's IP (172.20.0.2)
+          automatically, no /etc/hosts editing needed
+          no hardcoded IPs
+          if Flask's IP changes, DNS updates automatically
+
+5000   → Flask's port inside the container
+
+This is Container DNS — the same thing you proved
+in the networking lab:
+  ping container2 → FAILED on default bridge
+  ping container2 → WORKED on custom bridge
+```
+
+### Port Exposure — Security Pattern
+
+```
+Service  │ Internal Port │ External Port │ Accessible From
+─────────┼───────────────┼───────────────┼─────────────────
+Flask    │ 5000          │ NONE          │ Only Nginx
+Nginx    │ 80            │ 80            │ Everyone
+
+Flask is completely hidden from the outside world
+Only Nginx can reach Flask (same network)
+Users can ONLY reach Flask through Nginx
+This is the correct production security pattern
+```
+
+---
+
+## Real World Lessons Learned
+
+### Lesson 1 — container_name blocks scaling
+
+```yaml
+# This BLOCKS scaling
+web:
+  container_name: flask-app   ← forces one specific name
+                                 --scale web=2 fails
+
+# This ALLOWS scaling
+web:
+  # no container_name
+  # Docker auto-names: compose-lab-web-1, compose-lab-web-2
+```
+
+### Lesson 2 — version is obsolete
+
+```yaml
+# Old way (still works but shows warning)
+version: '3.8'
+services: ...
+
+# New way (no warning)
+services: ...
+# Just remove the version line entirely
+```
+
+### Lesson 3 — depends_on is startup order only
+
+```yaml
+depends_on:
+  - web
+```
+
+```
+This means: start web BEFORE nginx
+It does NOT mean: wait until web is healthy
+If Flask takes 10 seconds to start
+Nginx might still try to connect too early
+
+For production use health checks:
+depends_on:
+  web:
+    condition: service_healthy
+```
+
+### Lesson 4 — Non-root user confirmed
+
+```bash
+docker compose exec web whoami
+→ appuser
+
+# NOT root. This is correct.
+# Every production container should return a non-root user here
+```
+
+---
+
+## Commands Summary Table
+
+| Command | What it does |
+|---|---|
+| `docker compose up -d --build` | Build images and start all containers |
+| `docker compose down` | Stop and remove containers and networks |
+| `docker compose down -v` | Stop + remove containers, networks, volumes |
+| `docker compose down --rmi all` | Nuclear — removes everything including images |
+| `docker compose ps` | Show status of all services |
+| `docker compose logs` | Show logs from all services |
+| `docker compose logs -f` | Follow live logs from all services |
+| `docker compose logs -f web` | Follow live logs from one service |
+| `docker compose exec web bash` | Open shell inside running container |
+| `docker compose exec web whoami` | Run single command inside container |
+| `docker compose run web python migrate.py` | Run one-off command in new container |
+| `docker compose restart` | Restart all services |
+| `docker compose restart nginx` | Restart just one service |
+| `docker compose build` | Rebuild all images |
+| `docker compose build web` | Rebuild just one service |
+| `docker compose pull` | Pull latest images from registry |
+| `docker compose up -d --scale web=2` | Run 2 instances of web service |
+
+---
+
+## What This Proves You Can Do
+
+After completing this lab you can:
+
+```
+✓ Write a multi-stage Dockerfile from scratch
+✓ Create and use non-root users in containers
+✓ Configure Nginx as a reverse proxy
+✓ Write a docker-compose.yml for multi-service apps
+✓ Use custom bridge networks in Compose
+✓ Understand container DNS (service names as hostnames)
+✓ Scale services horizontally
+✓ Debug containers with exec and logs
+✓ Clean up completely with down --rmi all
+✓ Explain every line of every file to a hiring manager
+```
+
+This is the foundation of every production Docker deployment.
+Flask + Nginx is the same pattern used at companies worldwide.
+The only difference in production is adding a database service,
+SSL certificates, and deploying to EC2 instead of localhost.
+
+---
+
+## Next Steps
+
+```
+Lab completion order:
+Labs 1-10   → Docker fundamentals (tomorrow)
+This lab    → Docker Compose (done today) ✓
+Labs 11-15  → More Compose patterns
+Labs 16-20  → Swarm + CI/CD + Capstone
+
+Mega Project (Friday):
+Same pattern as this lab but on AWS:
+→ Flask + Nginx + RDS PostgreSQL
+→ Running on EC2 with Auto Scaling
+→ ALB + HTTPS + Cloudflare
+→ CloudWatch + SNS alerts
+→ SSM Parameter Store for secrets
+→ CI/CD with GitHub Actions
+```
+
+---
+
