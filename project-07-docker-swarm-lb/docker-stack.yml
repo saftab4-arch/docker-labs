@@ -1,0 +1,48 @@
+services:
+
+  web:
+    image: nginxinc/nginx-unprivileged:latest
+
+    deploy:
+      replicas: 5
+
+    networks:
+      - swarm-net
+
+    volumes:
+      - audit-data:/audit-data
+
+  nginx-lb:
+
+    image: nginx:latest
+
+    ports:
+      - "8080:8080"
+
+    networks:
+      - swarm-net
+
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+
+    deploy:
+      replicas: 1
+
+volumes:
+
+  postgres-data:
+    external: true
+
+  audit-data:
+    external: true
+
+  nginx-logs:
+    external: true
+
+  nginx-lb-logs:
+    external: true
+
+networks:
+
+  swarm-net:
+    external: true
