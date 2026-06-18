@@ -1,0 +1,895 @@
+========================================
+ Docker Security Audit Report
+ Generated: Wed Jun 17 10:31:58 EDT 2026
+========================================
+
+===== Running Containers =====
+CONTAINER ID   IMAGE      COMMAND                  CREATED          STATUS          PORTS                                         NAMES
+4d67cdaa70f1   postgres   "docker-entrypoint.s…"   15 minutes ago   Up 15 minutes   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp   postgres
+36df70c7b877   nginx      "/docker-entrypoint.…"   15 minutes ago   Up 15 minutes   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp       nginx
+9eab4d718a89   ubuntu     "sleep infinity"         15 minutes ago   Up 15 minutes                                                 audit-tool
+
+===== Images =====
+IMAGE                   ID             DISK USAGE   CONTENT SIZE   EXTRA
+alpine:latest           28bd5fe8b56d         13MB         3.93MB        
+failed-lab:latest       9238f6b85007        238MB         63.1MB   U    
+multistage-lab:latest   30371f3cdda3       92.7MB           26MB   U    
+nginx:latest            608a100c7165        241MB           66MB   U    
+postgres:latest         29ee7bb30d80        650MB          168MB   U    
+ubuntu:latest           f3d28607ddd7        160MB         45.3MB   U    
+
+===== Networks =====
+NETWORK ID     NAME           DRIVER    SCOPE
+b2d38f3b7c3c   bridge         bridge    local
+383de4df043e   host           host      local
+7772ea80cf7b   none           null      local
+b3cce70deccf   security-net   bridge    local
+
+===== Volumes =====
+DRIVER    VOLUME NAME
+local     audit-data
+local     nginx-logs
+local     postgres-data
+
+===== Container Resource Usage =====
+CONTAINER ID   NAME         CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS
+4d67cdaa70f1   postgres     0.01%     32.41MiB / 7.387GiB   0.43%     4.68kB / 2.93kB   31.9MB / 54.8MB   9
+36df70c7b877   nginx        0.00%     18.74MiB / 7.387GiB   0.25%     5.54kB / 5.27kB   16.9MB / 12.3kB   15
+9eab4d718a89   audit-tool   0.00%     25.45MiB / 7.387GiB   0.34%     50.7MB / 1.39MB   175MB / 165MB     4
+
+===== Port Mappings =====
+NAMES        PORTS
+postgres     0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+nginx        0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+audit-tool   
+
+===== Security-Net Details =====
+[
+    {
+        "Name": "security-net",
+        "Id": "b3cce70deccfca517bd0db1784eefb63b5d4562bf11f125a13863c155422218b",
+        "Created": "2026-06-17T13:42:19.414821782Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv4": true,
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.18.0.0/16",
+                    "Gateway": "172.18.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Options": {
+            "com.docker.network.enable_ipv4": "true",
+            "com.docker.network.enable_ipv6": "false"
+        },
+        "Labels": {},
+        "Containers": {
+            "36df70c7b87737adee7324fe3c723760498a5574ef73adbb9caf8cf11edee696": {
+                "Name": "nginx",
+                "EndpointID": "9b9c528d84b8d83448e2b3fbb27561ffdf32711596ab2ef1859059c973028699",
+                "MacAddress": "ee:66:5c:13:3d:0e",
+                "IPv4Address": "172.18.0.3/16",
+                "IPv6Address": ""
+            },
+            "4d67cdaa70f1d525a02503b02a554d37b273f08f8318e2ae2809ea2a43910f14": {
+                "Name": "postgres",
+                "EndpointID": "c436964249088aea48e0052c600e35aca0fd67ad134b10ce916887f4f98137ab",
+                "MacAddress": "4a:83:0b:1e:91:ec",
+                "IPv4Address": "172.18.0.4/16",
+                "IPv6Address": ""
+            },
+            "9eab4d718a89a2e17ec58f4ab5b54e463a3c0c96d8f90fc6dba9ca442a03ea2c": {
+                "Name": "audit-tool",
+                "EndpointID": "eb26a6276d07da641c440a2e1ddf20b4fb7dc4129f2ff94c471b2a66a70fc5d6",
+                "MacAddress": "66:26:89:33:67:99",
+                "IPv4Address": "172.18.0.2/16",
+                "IPv6Address": ""
+            }
+        },
+        "Status": {
+            "IPAM": {
+                "Subnets": {
+                    "172.18.0.0/16": {
+                        "IPsInUse": 6,
+                        "DynamicIPsAvailable": 65530
+                    }
+                }
+            }
+        }
+    }
+]
+
+===== Nginx Details =====
+[
+    {
+        "Id": "36df70c7b87737adee7324fe3c723760498a5574ef73adbb9caf8cf11edee696",
+        "Created": "2026-06-17T14:16:21.261099788Z",
+        "Path": "/docker-entrypoint.sh",
+        "Args": [
+            "nginx",
+            "-g",
+            "daemon off;"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 647,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-06-17T14:16:21.958744679Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:608a100c71651bf5b773c89083b4a1ad7ef4b2bd05d7a7e552271e03123692ad",
+        "ResolvConfPath": "/var/lib/docker/containers/36df70c7b87737adee7324fe3c723760498a5574ef73adbb9caf8cf11edee696/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/36df70c7b87737adee7324fe3c723760498a5574ef73adbb9caf8cf11edee696/hostname",
+        "HostsPath": "/var/lib/docker/containers/36df70c7b87737adee7324fe3c723760498a5574ef73adbb9caf8cf11edee696/hosts",
+        "LogPath": "/var/lib/docker/containers/36df70c7b87737adee7324fe3c723760498a5574ef73adbb9caf8cf11edee696/36df70c7b87737adee7324fe3c723760498a5574ef73adbb9caf8cf11edee696-json.log",
+        "Name": "/nginx",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "nginx-logs:/var/log/nginx:rw"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "security-net",
+            "PortBindings": {
+                "80/tcp": [
+                    {
+                        "HostIp": "",
+                        "HostPort": "8080"
+                    }
+                ]
+            },
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": null,
+            "DnsSearch": null,
+            "ExtraHosts": [],
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": null,
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [
+            {
+                "Type": "volume",
+                "Name": "nginx-logs",
+                "Source": "/var/lib/docker/volumes/nginx-logs/_data",
+                "Destination": "/var/log/nginx",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            }
+        ],
+        "Config": {
+            "Hostname": "36df70c7b877",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "ExposedPorts": {
+                "80/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "NGINX_VERSION=1.31.1",
+                "NJS_VERSION=0.9.9",
+                "NJS_RELEASE=1~trixie",
+                "ACME_VERSION=0.4.1",
+                "PKG_RELEASE=1~trixie",
+                "DYNPKG_RELEASE=1~trixie"
+            ],
+            "Cmd": [
+                "nginx",
+                "-g",
+                "daemon off;"
+            ],
+            "Image": "nginx",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": [
+                "/docker-entrypoint.sh"
+            ],
+            "Labels": {
+                "com.docker.compose.config-hash": "706556812d86e5308e4a87d23bae64274e81620f694a476bb6df965af82924dd",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "",
+                "com.docker.compose.image": "sha256:608a100c71651bf5b773c89083b4a1ad7ef4b2bd05d7a7e552271e03123692ad",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "project-06-docker-security-audit",
+                "com.docker.compose.project.config_files": "/home/syedaftab04/docker-labs/project-06-docker-security-audit/docker-compose.yml",
+                "com.docker.compose.project.working_dir": "/home/syedaftab04/docker-labs/project-06-docker-security-audit",
+                "com.docker.compose.service": "nginx",
+                "com.docker.compose.version": "5.1.4",
+                "desktop.docker.io/wsl-distro": "Ubuntu",
+                "maintainer": "NGINX Docker Maintainers \u003cdocker-maint@nginx.com\u003e"
+            },
+            "StopSignal": "SIGQUIT",
+            "StopTimeout": 1
+        },
+        "NetworkSettings": {
+            "SandboxID": "ba3ac992adeffe368d0121ca70bcd165cac3ae9591bbb1e292e62f860cfdd437",
+            "SandboxKey": "/var/run/docker/netns/ba3ac992adef",
+            "Ports": {
+                "80/tcp": [
+                    {
+                        "HostIp": "0.0.0.0",
+                        "HostPort": "8080"
+                    },
+                    {
+                        "HostIp": "::",
+                        "HostPort": "8080"
+                    }
+                ]
+            },
+            "Networks": {
+                "security-net": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "nginx",
+                        "nginx"
+                    ],
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "b3cce70deccfca517bd0db1784eefb63b5d4562bf11f125a13863c155422218b",
+                    "EndpointID": "9b9c528d84b8d83448e2b3fbb27561ffdf32711596ab2ef1859059c973028699",
+                    "Gateway": "172.18.0.1",
+                    "IPAddress": "172.18.0.3",
+                    "MacAddress": "ee:66:5c:13:3d:0e",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "nginx",
+                        "36df70c7b877"
+                    ]
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:4a2d27f57e72adbc1e1cfed8db6cbdef22c080e058565f92647f7aad258292f2",
+            "size": 2290,
+            "annotations": {
+                "com.docker.official-images.bashbrew.arch": "amd64",
+                "org.opencontainers.image.base.digest": "sha256:1275c5673a6135ff07b289ddafe4e2270dceb08eda14c0c69bb1b93ee25a9416",
+                "org.opencontainers.image.base.name": "debian:trixie-slim",
+                "org.opencontainers.image.created": "2026-06-11T00:23:00Z",
+                "org.opencontainers.image.revision": "3375edc7170bc7b7da708c1c658706eb5355e099",
+                "org.opencontainers.image.source": "https://github.com/nginx/docker-nginx.git#3375edc7170bc7b7da708c1c658706eb5355e099:mainline/debian",
+                "org.opencontainers.image.url": "https://hub.docker.com/_/nginx",
+                "org.opencontainers.image.version": "1.31.1"
+            },
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]
+
+===== Postgres Details =====
+[
+    {
+        "Id": "4d67cdaa70f1d525a02503b02a554d37b273f08f8318e2ae2809ea2a43910f14",
+        "Created": "2026-06-17T14:16:21.26634887Z",
+        "Path": "docker-entrypoint.sh",
+        "Args": [
+            "postgres"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 653,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-06-17T14:16:21.961834602Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:29ee7bb30d804447dc9a91fd0d74322ae1dc3a4072cc6346f70a5ed6e783b565",
+        "ResolvConfPath": "/var/lib/docker/containers/4d67cdaa70f1d525a02503b02a554d37b273f08f8318e2ae2809ea2a43910f14/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/4d67cdaa70f1d525a02503b02a554d37b273f08f8318e2ae2809ea2a43910f14/hostname",
+        "HostsPath": "/var/lib/docker/containers/4d67cdaa70f1d525a02503b02a554d37b273f08f8318e2ae2809ea2a43910f14/hosts",
+        "LogPath": "/var/lib/docker/containers/4d67cdaa70f1d525a02503b02a554d37b273f08f8318e2ae2809ea2a43910f14/4d67cdaa70f1d525a02503b02a554d37b273f08f8318e2ae2809ea2a43910f14-json.log",
+        "Name": "/postgres",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "postgres-data:/var/lib/postgresql:rw"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "security-net",
+            "PortBindings": {
+                "5432/tcp": [
+                    {
+                        "HostIp": "",
+                        "HostPort": "5432"
+                    }
+                ]
+            },
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": null,
+            "DnsSearch": null,
+            "ExtraHosts": [],
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": null,
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [
+            {
+                "Type": "volume",
+                "Name": "postgres-data",
+                "Source": "/var/lib/docker/volumes/postgres-data/_data",
+                "Destination": "/var/lib/postgresql",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            }
+        ],
+        "Config": {
+            "Hostname": "4d67cdaa70f1",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "ExposedPorts": {
+                "5432/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "POSTGRES_DB=companydb",
+                "POSTGRES_USER=postgres",
+                "POSTGRES_PASSWORD=StrongPassword123",
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/postgresql/18/bin",
+                "GOSU_VERSION=1.19",
+                "LANG=en_US.utf8",
+                "PG_MAJOR=18",
+                "PG_VERSION=18.4-1.pgdg13+1",
+                "PGDATA=/var/lib/postgresql/18/docker"
+            ],
+            "Cmd": [
+                "postgres"
+            ],
+            "Image": "postgres",
+            "Volumes": {
+                "/var/lib/postgresql": {}
+            },
+            "WorkingDir": "",
+            "Entrypoint": [
+                "docker-entrypoint.sh"
+            ],
+            "Labels": {
+                "com.docker.compose.config-hash": "900cd1ee215cf0705051438abdd3b6571b23e5f886a2aabae7725989ce5ebcf3",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "",
+                "com.docker.compose.image": "sha256:29ee7bb30d804447dc9a91fd0d74322ae1dc3a4072cc6346f70a5ed6e783b565",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "project-06-docker-security-audit",
+                "com.docker.compose.project.config_files": "/home/syedaftab04/docker-labs/project-06-docker-security-audit/docker-compose.yml",
+                "com.docker.compose.project.working_dir": "/home/syedaftab04/docker-labs/project-06-docker-security-audit",
+                "com.docker.compose.service": "postgres",
+                "com.docker.compose.version": "5.1.4",
+                "desktop.docker.io/wsl-distro": "Ubuntu"
+            },
+            "StopSignal": "SIGINT",
+            "StopTimeout": 1
+        },
+        "NetworkSettings": {
+            "SandboxID": "fe9e8675b1344d4e36da526d6c334b0bf3725d0c3cbe289676394311932dff37",
+            "SandboxKey": "/var/run/docker/netns/fe9e8675b134",
+            "Ports": {
+                "5432/tcp": [
+                    {
+                        "HostIp": "0.0.0.0",
+                        "HostPort": "5432"
+                    },
+                    {
+                        "HostIp": "::",
+                        "HostPort": "5432"
+                    }
+                ]
+            },
+            "Networks": {
+                "security-net": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "postgres",
+                        "postgres"
+                    ],
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "b3cce70deccfca517bd0db1784eefb63b5d4562bf11f125a13863c155422218b",
+                    "EndpointID": "c436964249088aea48e0052c600e35aca0fd67ad134b10ce916887f4f98137ab",
+                    "Gateway": "172.18.0.1",
+                    "IPAddress": "172.18.0.4",
+                    "MacAddress": "4a:83:0b:1e:91:ec",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "postgres",
+                        "4d67cdaa70f1"
+                    ]
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:c27c01f74af25bde5f4f0f69d01944c4fc7f0376ea53c72aa1180dd593ce1d52",
+            "size": 3439,
+            "annotations": {
+                "com.docker.official-images.bashbrew.arch": "amd64",
+                "org.opencontainers.image.base.digest": "sha256:1275c5673a6135ff07b289ddafe4e2270dceb08eda14c0c69bb1b93ee25a9416",
+                "org.opencontainers.image.base.name": "debian:trixie-slim",
+                "org.opencontainers.image.created": "2026-06-11T00:33:59Z",
+                "org.opencontainers.image.revision": "dc8f7ae06a43a6c9647d9b7ca3b270bd148307fb",
+                "org.opencontainers.image.source": "https://github.com/docker-library/postgres.git#dc8f7ae06a43a6c9647d9b7ca3b270bd148307fb:18/trixie",
+                "org.opencontainers.image.url": "https://hub.docker.com/_/postgres",
+                "org.opencontainers.image.version": "18.4"
+            },
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]
+
+===== Audit Tool Details =====
+[
+    {
+        "Id": "9eab4d718a89a2e17ec58f4ab5b54e463a3c0c96d8f90fc6dba9ca442a03ea2c",
+        "Created": "2026-06-17T14:16:21.252500133Z",
+        "Path": "sleep",
+        "Args": [
+            "infinity"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 561,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-06-17T14:16:21.703937986Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e5718d46ff64",
+        "ResolvConfPath": "/var/lib/docker/containers/9eab4d718a89a2e17ec58f4ab5b54e463a3c0c96d8f90fc6dba9ca442a03ea2c/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/9eab4d718a89a2e17ec58f4ab5b54e463a3c0c96d8f90fc6dba9ca442a03ea2c/hostname",
+        "HostsPath": "/var/lib/docker/containers/9eab4d718a89a2e17ec58f4ab5b54e463a3c0c96d8f90fc6dba9ca442a03ea2c/hosts",
+        "LogPath": "/var/lib/docker/containers/9eab4d718a89a2e17ec58f4ab5b54e463a3c0c96d8f90fc6dba9ca442a03ea2c/9eab4d718a89a2e17ec58f4ab5b54e463a3c0c96d8f90fc6dba9ca442a03ea2c-json.log",
+        "Name": "/audit-tool",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "audit-data:/reports:rw"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "security-net",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": null,
+            "DnsSearch": null,
+            "ExtraHosts": [],
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": null,
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [
+            {
+                "Type": "volume",
+                "Name": "audit-data",
+                "Source": "/var/lib/docker/volumes/audit-data/_data",
+                "Destination": "/reports",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            }
+        ],
+        "Config": {
+            "Hostname": "9eab4d718a89",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            ],
+            "Cmd": [
+                "sleep",
+                "infinity"
+            ],
+            "Image": "ubuntu",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": null,
+            "Labels": {
+                "com.docker.compose.config-hash": "386cbdb5a8e198483dfcbd1b749c91694fa524a063f9c152393f51930f169d21",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "",
+                "com.docker.compose.image": "sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e5718d46ff64",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "project-06-docker-security-audit",
+                "com.docker.compose.project.config_files": "/home/syedaftab04/docker-labs/project-06-docker-security-audit/docker-compose.yml",
+                "com.docker.compose.project.working_dir": "/home/syedaftab04/docker-labs/project-06-docker-security-audit",
+                "com.docker.compose.service": "audit-tool",
+                "com.docker.compose.version": "5.1.4",
+                "desktop.docker.io/wsl-distro": "Ubuntu",
+                "org.opencontainers.image.created": "2026-04-21T17:23:54.324551+00:00",
+                "org.opencontainers.image.description": "The Ubuntu container image maintained by Canonical\n\nUbuntu is a Debian-based Linux operating system that runs from the desktop to the cloud, to all your internet connected things.\nIt is the world's most popular operating system across public clouds and OpenStack clouds.\nIt is the number one platform for containers; from Docker to Kubernetes to LXD, Ubuntu can run your containers at scale.\nFast, secure and simple, Ubuntu powers millions of PCs worldwide.\n",
+                "org.opencontainers.image.title": "ubuntu",
+                "org.opencontainers.image.version": "26.04"
+            },
+            "StopTimeout": 1
+        },
+        "NetworkSettings": {
+            "SandboxID": "68407881209bc925c38c68dc5c193f7d5dd263cb3632b23a55eb57de7f8a1fe6",
+            "SandboxKey": "/var/run/docker/netns/68407881209b",
+            "Ports": {},
+            "Networks": {
+                "security-net": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "audit-tool",
+                        "audit-tool"
+                    ],
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "b3cce70deccfca517bd0db1784eefb63b5d4562bf11f125a13863c155422218b",
+                    "EndpointID": "eb26a6276d07da641c440a2e1ddf20b4fb7dc4129f2ff94c471b2a66a70fc5d6",
+                    "Gateway": "172.18.0.1",
+                    "IPAddress": "172.18.0.2",
+                    "MacAddress": "66:26:89:33:67:99",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "audit-tool",
+                        "9eab4d718a89"
+                    ]
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:d31acef2a964b6df1f2b7e20a1525c4f2378024e087a4f8a8a9a4247e6a79573",
+            "size": 1392,
+            "annotations": {
+                "com.docker.official-images.bashbrew.arch": "amd64",
+                "org.opencontainers.image.base.name": "scratch",
+                "org.opencontainers.image.created": "2026-04-21T00:00:00Z",
+                "org.opencontainers.image.revision": "1ef28df0b01538c10742176f1255895baf84d8d0",
+                "org.opencontainers.image.source": "https://git.launchpad.net/cloud-images/+oci/ubuntu-base",
+                "org.opencontainers.image.url": "https://hub.docker.com/_/ubuntu",
+                "org.opencontainers.image.version": "26.04"
+            },
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]
+
+===== Finished =====

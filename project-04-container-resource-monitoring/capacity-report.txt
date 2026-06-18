@@ -1,0 +1,16 @@
+===================================
+Container Capacity Report
+===================================
+Date: Mon Jun 15 15:39:14 EDT 2026
+
+Running Containers
+-----------------------------------
+NAMES                  STATUS       IMAGE
+multistage-container   Up 2 hours   multistage-lab
+
+Container Resource Usage
+-----------------------------------
+CONTAINER ID   NAME                   CPU %     MEM USAGE / LIMIT    MEM %     NET I/O        BLOCK I/O     PIDS
+41887febe551   multistage-container   0.00%     11.6MiB / 7.387GiB   0.15%     1.7kB / 126B   0B / 20.5kB   15
+
+Report Generated Successfully

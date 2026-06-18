@@ -1,0 +1,61 @@
+==================================
+Docker Investigation Report
+==================================
+
+Date: Tue Jun 16 08:13:15 EDT 2026
+
+==================================
+Container: fixed-container
+==================================
+
+Status:
+running
+
+Exit Code:
+0
+
+Configured CMD:
+[nginx -g daemon off;]
+
+Recent Logs:
+2026/06/16 12:00:20 [notice] 1#1: start worker process 41
+2026/06/16 12:00:20 [notice] 1#1: start worker process 42
+172.17.0.1 - - [16/Jun/2026:12:00:48 +0000] "GET / HTTP/1.1" 200 158 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36" "-"
+2026/06/16 12:00:48 [error] 30#30: *2 open() "/usr/share/nginx/html/favicon.ico" failed (2: No such file or directory), client: 172.17.0.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "localhost:8085", referrer: "http://localhost:8085/"
+172.17.0.1 - - [16/Jun/2026:12:00:48 +0000] "GET /favicon.ico HTTP/1.1" 404 555 "http://localhost:8085/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36" "-"
+
+==================================
+Container: multistage-container
+==================================
+
+Status:
+exited
+
+Exit Code:
+255
+
+Configured CMD:
+[nginx -g daemon off;]
+
+Recent Logs:
+2026/06/15 17:56:04 [notice] 1#1: start worker process 39
+2026/06/15 17:56:04 [notice] 1#1: start worker process 40
+2026/06/15 17:56:04 [notice] 1#1: start worker process 41
+2026/06/15 17:56:04 [notice] 1#1: start worker process 42
+2026/06/15 17:56:04 [notice] 1#1: start worker process 43
+
+==================================
+Container: myubuntu
+==================================
+
+Status:
+exited
+
+Exit Code:
+255
+
+Configured CMD:
+[bash]
+
+Recent Logs:
+[?2004h]0;root@3a92dbf13dca: /root@3a92dbf13dca:/# 
