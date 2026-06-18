@@ -1,0 +1,95 @@
+=================================
+Docker Asset Inventory Report
+Generated: Thu Jun 18 14:00:16 EDT 2026
+=================================
+
+===== HOST INFORMATION =====
+SYEDLENOVO
+ 14:00:16 up 12:46,  2 users,  load average: 0.79, 0.41, 0.29
+Linux SYEDLENOVO 6.18.33.1-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Fri Jun  5 01:12:21 UTC 2026 x86_64 GNU/Linux
+192.168.250.206 
+
+===== DOCKER VERSION =====
+Docker version 29.5.3, build d1c06ef
+Docker Compose version v5.1.4
+
+===== RUNNING CONTAINERS =====
+CONTAINER ID   IMAGE          COMMAND                  CREATED              STATUS              PORTS      NAMES
+d75345c49018   redis:latest   "docker-entrypoint.s…"   33 seconds ago       Up 32 seconds       6379/tcp   redis.2.ykkasfb9qojgcn8vc3mhz7l8s
+c47c10cefd58   redis:latest   "docker-entrypoint.s…"   33 seconds ago       Up 32 seconds       6379/tcp   redis.1.w3y7nr5nei8l64p6ubhw8d5r1
+8f3feabb9602   nginx:latest   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp     web.3.x6c2cnjbl8flfrxx0xq9csf3g
+323cd2b4f7f4   nginx:latest   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp     web.2.0jq9ls9c2vstkwwisk4ze52qz
+ce20e1c1a82a   nginx:latest   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp     web.1.7swyk5qfcqpm2p3ikpxo8m0wt
+
+===== ALL CONTAINERS =====
+CONTAINER ID   IMAGE          COMMAND                  CREATED              STATUS              PORTS      NAMES
+d75345c49018   redis:latest   "docker-entrypoint.s…"   33 seconds ago       Up 32 seconds       6379/tcp   redis.2.ykkasfb9qojgcn8vc3mhz7l8s
+c47c10cefd58   redis:latest   "docker-entrypoint.s…"   33 seconds ago       Up 32 seconds       6379/tcp   redis.1.w3y7nr5nei8l64p6ubhw8d5r1
+8f3feabb9602   nginx:latest   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp     web.3.x6c2cnjbl8flfrxx0xq9csf3g
+323cd2b4f7f4   nginx:latest   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp     web.2.0jq9ls9c2vstkwwisk4ze52qz
+ce20e1c1a82a   nginx:latest   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp     web.1.7swyk5qfcqpm2p3ikpxo8m0wt
+
+===== IMAGES =====
+IMAGE                                                                                                        ID             DISK USAGE   CONTENT SIZE   EXTRA
+alpine:latest                                                                                                28bd5fe8b56d         13MB         3.93MB        
+failed-lab:latest                                                                                            9238f6b85007        238MB         63.1MB        
+multistage-lab:latest                                                                                        30371f3cdda3       92.7MB           26MB        
+nginx:latest                                                                                                 608a100c7165        241MB           66MB        
+nginx:latest@sha256:6415da96b72a2f6ff433053df1da4bd507e45bc44b2c83dbac0ddeea80c6f066                         6415da96b72a        241MB           66MB   U    
+nginxinc/nginx-unprivileged:latest@sha256:12687e757fa0cedfd6b4f15302000d62d1872def3f24bcf76c6d52f09f7f9b77   12687e757fa0        226MB           60MB        
+postgres:latest                                                                                              29ee7bb30d80        650MB          168MB        
+redis:latest@sha256:0a972391db0b24ec336e35d1bc98b237237e26f82bf5120cf2f6b1688d1df973                         0a972391db0b        208MB         56.3MB   U    
+ubuntu:latest                                                                                                f3d28607ddd7        160MB         45.3MB        
+
+===== VOLUMES =====
+DRIVER    VOLUME NAME
+local     audit-data
+local     nginx-lb-logs
+local     nginx-logs
+local     postgres-data
+
+===== NETWORKS =====
+NETWORK ID     NAME              DRIVER    SCOPE
+b2d38f3b7c3c   bridge            bridge    local
+f06e79336f5e   docker_gwbridge   bridge    local
+383de4df043e   host              host      local
+ys0tzp4vlbso   ingress           overlay   swarm
+7772ea80cf7b   none              null      local
+b3cce70deccf   security-net      bridge    local
+zqqq4yd2l7xu   swarm-net         overlay   swarm
+
+===== DOCKER DISK USAGE =====
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          10        2         2.576GB   907MB (35%)
+Containers      5         5         254kB     0B (0%)
+Local Volumes   4         0         48.61MB   48.61MB (100%)
+Build Cache     34        0         1.778GB   1.623GB
+
+===== SWARM INFORMATION =====
+ Swarm: active
+
+ID                            HOSTNAME         STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+rmdfc79xihh1rpaunate6dfwn *   docker-desktop   Ready     Active         Leader           29.5.3
+
+ID             NAME      MODE         REPLICAS   IMAGE          PORTS
+nqn1csyena1d   redis     replicated   2/2        redis:latest   
+jxxwc1yag0wh   web       replicated   3/3        nginx:latest   
+
+NAME      SERVICES
+
+===== CONTAINER RESOURCE USAGE =====
+CONTAINER ID   NAME                                CPU %     MEM USAGE / LIMIT     MEM %     NET I/O         BLOCK I/O         PIDS
+d75345c49018   redis.2.ykkasfb9qojgcn8vc3mhz7l8s   0.31%     7.379MiB / 7.387GiB   0.10%     956B / 126B     0B / 0B           19
+c47c10cefd58   redis.1.w3y7nr5nei8l64p6ubhw8d5r1   0.24%     9.453MiB / 7.387GiB   0.12%     998B / 126B     4.87MB / 0B       19
+8f3feabb9602   web.3.x6c2cnjbl8flfrxx0xq9csf3g     0.00%     14.53MiB / 7.387GiB   0.19%     1.44kB / 126B   4.49MB / 12.3kB   15
+323cd2b4f7f4   web.2.0jq9ls9c2vstkwwisk4ze52qz     0.00%     13.87MiB / 7.387GiB   0.18%     1.68kB / 126B   5.81MB / 12.3kB   15
+ce20e1c1a82a   web.1.7swyk5qfcqpm2p3ikpxo8m0wt     0.00%     15.92MiB / 7.387GiB   0.21%     1.63kB / 126B   6.09MB / 12.3kB   15
+
+===== SUMMARY =====
+Containers: 5
+Running Containers: 5
+Images: 9
+Volumes: 4
+Networks: 7
+
+Report saved to: reports/docker_inventory_2026-06-18_14-00-16.log
